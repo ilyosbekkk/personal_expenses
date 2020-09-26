@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widgets/widget 1: safe area.dart';
 import 'package:flutter_widgets/widget%202:%20expanded.dart';
+import 'package:flutter_widgets/widget 3: wrap.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       routes: {
         'safe_area': (context) => SafeAreaWIdget(),
         'expanded': (context) => ExpandedWidget(),
+        'wrap': (context) => WrapWidget(),
       },
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -46,11 +48,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+
   List<Widget> buildWidgetList() {
-    buttons = [page_buttons("Safe Area", 'safe_area'), page_buttons("Expanded", "expanded")];
+    buttons = [page_buttons("Safe Area", 'safe_area'), page_buttons("Expanded", "expanded"), page_buttons("Wrap", 'wrap')];
     return buttons;
   }
 
+  @override
+  void initState() {
+
+    super.initState();
+    buildWidgetList();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
