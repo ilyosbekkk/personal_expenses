@@ -4,6 +4,7 @@ import 'package:flutter_widgets/widget%202:%20expanded.dart';
 import 'package:flutter_widgets/widget 3: wrap.dart';
 import 'package:flutter_widgets/widget 4: animated container.dart';
 import 'package:flutter_widgets/widget 5: opacity.dart';
+import 'package:flutter_widgets/widget6: future builder.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,7 +20,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      routes: {'safe_area': (context) => SafeAreaWIdget(), 'expanded': (context) => ExpandedWidget(), 'wrap': (context) => WrapWidget(), 'animated container': (context) => AnimatedContainerWidget(), 'opacity': (context) => OpacityWidget()},
+      routes: {'safe_area': (context) => SafeAreaWIdget(), 'expanded':
+          (context) => ExpandedWidget(), 'wrap': (context) => WrapWidget(),
+        'animated container': (context) => AnimatedContainerWidget(),
+        'opacity': (context) => OpacityWidget(),
+        'future': (context) => FutureBuilderWidget()
+      },
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -47,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<Widget> buildWidgetList() {
-    buttons = [page_buttons("Safe Area", 'safe_area'), page_buttons("Expanded", "expanded"), page_buttons("Wrap", 'wrap'), page_buttons("Animated Container", "animated container"), page_buttons("Opacity", "opacity")];
+    buttons = [page_buttons("Safe Area", 'safe_area'), page_buttons("Expanded", "expanded"), page_buttons("Wrap", 'wrap'), page_buttons("Animated Container", "animated container"), page_buttons("Opacity", "opacity"), page_buttons("Future Builder", "future")];
 
     return buttons;
   }
