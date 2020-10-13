@@ -6,10 +6,6 @@ class InsertData extends StatefulWidget {
 }
 
 
-
-
-
-
 class _InsertDataState extends State<InsertData> {
   @override
   Widget build(BuildContext context) {
