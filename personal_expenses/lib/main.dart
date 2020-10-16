@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -55,10 +53,10 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     fetchData();
   }
+
   @override
   Widget build(BuildContext context) {
     widget._mContext = context;
-
 
     return Scaffold(
       appBar: AppBar(
@@ -84,8 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             Chart(_recentTransactions),
-
-            ItemsList(widget._transactions,  _deleteTransaction),
+            ItemsList(widget._transactions, _deleteTransaction, _updateTransaction),
           ],
         ),
       ),
@@ -233,16 +230,16 @@ class _MyHomePageState extends State<MyHomePage> {
   //region add transaction
   void addItems(String title, double price) async {
     setState(() {
-      BuildDatabase.saveToDatabase(new ExpenseTransaction(id: null, title: title, amount: price , date: widget._selectedDate.toString()));
-
-      /*BuildDatabase.expenses().then((value) {
-         for(int i = 0; i<value.length; i++){
-           print(value[i].title + " " + value[i].id.toString() + " " + value[i].amount.toString());
-           print(value[i].date);
-         }
-      });*/
+      BuildDatabase.saveToDatabase(new ExpenseTransaction(
+          id: null,
+          title: title,
+          amount: price,
+          date: widget._selectedDate.toString()));
       widget._transactions.add(new ExpenseTransaction(
-          id: 1, title: title, amount: price, date: widget._selectedDate.toString()));
+          id: 1,
+          title: title,
+          amount: price,
+          date: widget._selectedDate.toString()));
     });
   }
 
@@ -250,34 +247,34 @@ class _MyHomePageState extends State<MyHomePage> {
   //region deleteTransaction
   void _deleteTransaction(ExpenseTransaction transaction) {
     setState(() {
+      BuildDatabase.deleteFromDatabase(transaction.id);
       widget._transactions.remove(transaction);
+    });
+  }
+
+//endregionk
+  //region update transaction
+   void _updateTransaction(ExpenseTransaction transaction){
+    _openAddItemModalView();
+    BuildDatabase.updateTransaction(transaction);
+   }
+  //endregion
+  //region fetch data from database
+  void fetchData() {
+    BuildDatabase.expenses().then((value) {
+      setState(() {
+        if (widget._transactions.isNotEmpty) {
+          widget._transactions.clear();
+        }
+        widget._transactions.addAll(value);
+        for (int i = 0; i < value.length; i++) {
+          print(value[i].title);
+        }
+      });
     });
   }
 //endregion
 
- //region fetch data from database
-    void fetchData(){
-
-    BuildDatabase.expenses().then((value) {
-      setState(() {
-        if(widget._transactions.isNotEmpty){
-          widget._transactions.clear();
-        }
-        widget._transactions.addAll(value);
-        for(int i = 0; i<value.length; i++){
-          print(value[i].title);
-        }
-
-      });
-
-
-
-
-    });
-
-
-   }
  //endregion
-//endregion
 
 }

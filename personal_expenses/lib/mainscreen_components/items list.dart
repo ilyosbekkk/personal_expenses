@@ -6,10 +6,12 @@ import 'package:personal_expenses/models/transaction.dart';
 class ItemsList extends StatefulWidget {
   //region vars&constructor
   List<ExpenseTransaction> transactions;
-  final Function  _deleteTransaction;
-  ItemsList(this.transactions, this._deleteTransaction);
-  //endregion
+  final Function _deleteTransaction;
+  final Function _updateTransaction;
 
+  ItemsList(this.transactions, this._deleteTransaction,  this._updateTransaction);
+
+  //endregion
 
   @override
   ItemsListState createState() => ItemsListState();
@@ -22,7 +24,7 @@ class ItemsListState extends State<ItemsList> {
     return Container(
         child: widget.transactions == null || widget.transactions.isEmpty
             ? Text(
-                "Nothing to show",
+                "Waiting...",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               )
             : Expanded(
@@ -34,6 +36,7 @@ class ItemsListState extends State<ItemsList> {
                     }),
               ));
   }
+
 //endregion
   //region UI builder methods
   //region Card View Children
@@ -51,6 +54,23 @@ class ItemsListState extends State<ItemsList> {
       ),
     );
   }
+
+
+  Widget editTransactionWidget(ExpenseTransaction transaction) {
+    return Container(
+      alignment: Alignment.topRight,
+      child: IconButton(
+        onPressed: () {
+
+        },
+        icon: Icon(
+          Icons.edit,
+          color: Colors.blue,
+        ),
+      ),
+    );
+  }
+
 
   Widget priceBoxWidget(ExpenseTransaction tx) {
     return Container(
@@ -87,7 +107,6 @@ class ItemsListState extends State<ItemsList> {
         ),
         Container(
           child: Text(
-
             DateFormat('yyyy-MM-dd').format(time),
             style: TextStyle(color: Colors.grey),
           ),
@@ -134,26 +153,33 @@ class ItemsListState extends State<ItemsList> {
   }
 
 //endregion
-
   //region Item ViewHolder
   Widget itemViewholder(ExpenseTransaction tx) {
     return Card(
-
         shadowColor: Colors.blue,
-        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.green), borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+            side: BorderSide(color: Colors.green),
+            borderRadius: BorderRadius.circular(10)),
         elevation: 5.0,
         child: Row(
           children: [
             priceBoxWidget(tx),
             ItemInfoWidget(tx),
             Expanded(
-              child: deleteTransactionWidget(tx),
-            )
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  editTransactionWidget(tx),
+                  deleteTransactionWidget(tx)
+                ],
+              ),
+            ),
+
           ],
         ));
   }
 
 //endregion
-  //endregion
+//endregion
 
 }

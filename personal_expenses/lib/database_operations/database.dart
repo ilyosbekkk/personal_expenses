@@ -23,19 +23,32 @@ class BuildDatabase {
   }
 
   //endregion
-
   //region save to database
   static Future<void> saveToDatabase(ExpenseTransaction transaction) async {
-    Database db;
+
     BuildDatabase.open_database().then((value) {
-      db = value;
-      db.insert('transactions', transaction.toMap(),
+      value.insert('transactions', transaction.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     });
   }
 
   //endregion
+  //region delete from database
+  static Future<void> deleteFromDatabase(int id) async {
+    BuildDatabase.open_database().then((value) {
+      value.delete('transactions', where: "id = ?", whereArgs: [id]);
+    });
+  }
 
+  //endregion
+  //region update database
+  static Future<void> updateTransaction(ExpenseTransaction transaction) {
+       BuildDatabase.open_database().then((value){
+         value.update('transactions', transaction.toMap(), where: "id = ?",  whereArgs: [transaction.id]);
+       });
+  }
+
+  //endregion
   //region retrieve database
   static Future<List<ExpenseTransaction>> expenses() async {
     final Database db = await BuildDatabase.open_database();
