@@ -15,7 +15,7 @@ class BuildDatabase {
       join(await getDatabasesPath(), 'personal_expenses.db'),
       onCreate: (db, version) {
         return db.execute(
-            "CREATE TABLE transactions(id INTEGER PRIMARY KEY, title TEXT,  amount DOUBLE)");
+            "CREATE TABLE transactions(id INTEGER PRIMARY KEY, title TEXT,  amount DOUBLE,  date TEXT)");
       },
       version: 1,
     );

@@ -17,7 +17,7 @@ class ExpenseTransaction {
       'id': id,
       'title': title,
       'amount': amount,
-      'date': date.toString()
+      'date': date
     };
   }
 //endregion
