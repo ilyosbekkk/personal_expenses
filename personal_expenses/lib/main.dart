@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:personal_expenses/mainscreen_components/chart.dart';
 import 'package:personal_expenses/mainscreen_components/items%20list.dart';
 import 'package:personal_expenses/models/transaction.dart';
@@ -27,8 +28,9 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
 //region vars
-  final title = TextEditingController();
-  final price = TextEditingController();
+  final _title = TextEditingController();
+  final _price = TextEditingController();
+  DateTime _selectedDate;
   List<Transaction> transactions = new List();
 
 //endregion
@@ -39,13 +41,36 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   BuildContext mContext;
+  bool isModalOpen = false;
 
+  //region presentDatePicker
+  void _presentDatePicker() {
+    showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(
+              (2020),
+            ),
+            lastDate: DateTime.now())
+        .then((value) {
+      if (value != null) {
+        widget._selectedDate = value;
+      }
+    });
+  }
+
+  //endregion
   //region recentTransactions
-  List<Transaction> get _recentTransactions{
+  List<Transaction> get _recentTransactions {
     return widget.transactions.where((element) {
-      return element.date.isAfter(DateTime.now().subtract(Duration(days: 7),),);
+      return element.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
     }).toList();
   }
+
   //endregion
   //region modal bottom sheet
   void _openAddItemModalView() async {
@@ -74,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Container(
                       margin: EdgeInsets.only(left: 10, right: 10),
                       child: TextField(
-                        controller: widget.title,
+                        controller: widget._title,
                         decoration: InputDecoration(
                             labelText: "Item", hintText: "Product name"),
                       ),
@@ -83,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       margin: EdgeInsets.only(left: 10, right: 10),
                       child: TextField(
                         keyboardType: TextInputType.number,
-                        controller: widget.price,
+                        controller: widget._price,
                         decoration: InputDecoration(
                             labelText: "Amount", hintText: "Overall amount"),
                       ),
@@ -93,32 +118,33 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("No date chosen"),
+                          Text(widget._selectedDate == null
+                              ? "No date chosen"
+                              : DateFormat.yMd().format(widget._selectedDate)),
                           FlatButton(
-                            textColor: Colors.blue,
-                            child: Text("Pick a date"),
-                            onPressed: () {},
-                          )
+                              textColor: Colors.blue,
+                              child: Text("Pick a date"),
+                              onPressed: _presentDatePicker)
                         ],
                       ),
                     ),
                     RaisedButton(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0)
-                      ),
+                          borderRadius: BorderRadius.circular(10.0)),
                       color: Colors.red,
                       textColor: Colors.white,
                       onPressed: () {
-                        if (widget.title.text.isEmpty ||
-                            widget.price.text.isEmpty) {
-                          toast("Product/Amount cannot be empty");
+                        if (widget._title.text.isEmpty ||
+                            widget._price.text.isEmpty || widget._selectedDate == null) {
+                          toast("Product/Amount/Date cannot be empty!");
+                        } else if (double.tryParse(widget._price.text) ==
+                            null) {
+                          toast("Price accepts numeric value only!");
                         } else {
-                          addItems(widget.title.text,
-                              double.parse(widget.price.text));
+                          addItems(widget._title.text,
+                              double.parse(widget._price.text));
                           Navigator.pop(context);
-                          toast("${widget.title.text} added");
-                           widget.title.text = "";
-                          widget.price.text = "";
+
                         }
                       },
                       child: Text("add item"),
@@ -128,7 +154,14 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           );
-        });
+        }).whenComplete(() {
+      widget._title.text = "";
+      widget._price.text = "";
+      widget._selectedDate = null;
+      setState(() {
+        isModalOpen = false;
+      });
+    });
   }
 
   //endregion
@@ -136,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void addItems(String title, double price) {
     setState(() {
       widget.transactions.add(new Transaction(
-          id: "1", title: title, amount: price, date: DateTime.now()));
+          id: "1", title: title, amount: price, date: widget._selectedDate));
     });
   }
 
@@ -145,31 +178,56 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     mContext = context;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Personal Expenses"),
         actions: [
-          IconButton(
-            onPressed: () => _openAddItemModalView(),
-            icon: Icon(Icons.add),
-          )
+          !isModalOpen
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isModalOpen = true;
+                    });
+                    _openAddItemModalView();
+                  },
+                  icon: Icon(Icons.add),
+                )
+              : Container(
+                  margin: EdgeInsets.only(right: 10),
+                  child: Icon(Icons.close),
+                )
         ],
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
+      body: Container(
         child: Column(
           children: [
             Chart(_recentTransactions),
-            ItemsList(widget.transactions),
+            ItemsList(widget.transactions,  _deleteTransaction),
           ],
         ),
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddItemModalView(),
+        onPressed: () {
+          setState(() {
+            isModalOpen = true;
+          });
+          _openAddItemModalView();
+        },
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+//endregion
+  //region deleteTransaction
+  void _deleteTransaction(Transaction transaction){
+
+    setState(() {
+      widget.transactions.remove(transaction);
+
+    });
+  }
   //endregion
+
 }

@@ -1,34 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:personal_expenses/mainscreen_components/chart.dart';
 import 'package:personal_expenses/models/transaction.dart';
 
 class ItemsList extends StatefulWidget {
   //region list of transactions
   List<Transaction> transactions;
+  final Function  _deleteTransaction;
 
-  ItemsList(this.transactions);
+  ItemsList(this.transactions, this._deleteTransaction);
 
   @override
   ItemsListState createState() => ItemsListState();
 }
 
 class ItemsListState extends State<ItemsList> {
-  //region onClicks
-  void deleteTransaction(Transaction transaction) {
-    setState(() {
-      widget.transactions.remove(transaction);
 
-    });
-  }
-
-  //endregion
   //region Card View Children
   Widget deleteTransactionWidget(Transaction transaction) {
     return Container(
       alignment: Alignment.topRight,
       child: IconButton(
         onPressed: () {
-         showDeleteDialog(transaction);
+          showDeleteDialog(transaction);
         },
         icon: Icon(
           Icons.delete,
@@ -42,13 +36,20 @@ class ItemsListState extends State<ItemsList> {
     return Container(
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: Text(
-        '\$' + tx.amount.toString(),
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+      child: CircleAvatar(
+        radius: 25,
+        foregroundColor: Colors.red,
+        backgroundColor: Colors.yellow,
+        child: FittedBox(
+          child: Text(
+            '\$' + tx.amount.toString(),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+          ),
+        ),
       ),
-      decoration: BoxDecoration(
+      /* decoration: BoxDecoration(
         border: Border.all(color: Colors.purple, width: 2),
-      ),
+      ),*/
     );
   }
 
@@ -73,48 +74,49 @@ class ItemsListState extends State<ItemsList> {
   }
 
   //endregion
-
-
   //region alert dialog
-  Future<void> showDeleteDialog(Transaction  transaction) async{
-    return showDialog(context: context,  barrierDismissible: false,
-        builder: (BuildContext contex){
-             return AlertDialog(
-               title: Text("Delete a transaction"),
-               content: SingleChildScrollView(
-                 child: ListBody(
-                   children: [
-                     Text("Are you sure to delete a transaction?")
-                   ],
-                 ),
-
-               ),
-               actions: [
-                 Row(
-                   children: [
-                     FlatButton(
-                       onPressed: () {
-                         deleteTransaction(transaction);
-                         Navigator.of(context).pop();
-
-                       },
-                       child: Text("Yes"),
-                     ),FlatButton(
-                       onPressed: () {
-                         Navigator.of(context).pop();
-                       },
-                       child: Text("No"),
-                     ),
-                   ],
-                 )
-               ],
-             );
+  Future<void> showDeleteDialog(Transaction transaction) async {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext contex) {
+          return AlertDialog(
+            title: Text("Delete a transaction"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [Text("Are you sure to delete a transaction?")],
+              ),
+            ),
+            actions: [
+              Row(
+                children: [
+                  FlatButton(
+                    onPressed: () {
+                     widget._deleteTransaction(transaction);
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Yes"),
+                  ),
+                  FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("No"),
+                  ),
+                ],
+              )
+            ],
+          );
         });
   }
+
   //endregion
   //region Item ViewHolder
-  Widget itemViewholder(Transaction tx){
-    return  Card(
+  Widget itemViewholder(Transaction tx) {
+    return Card(
+
+        shadowColor: Colors.blue,
+        shape: RoundedRectangleBorder(side: BorderSide(color: Colors.green), borderRadius: BorderRadius.circular(10)),
         elevation: 5.0,
         child: Row(
           children: [
@@ -126,24 +128,25 @@ class ItemsListState extends State<ItemsList> {
           ],
         ));
   }
+
   //endregion
   //region overrides
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: widget.transactions == null || widget.transactions.isEmpty
-          ? Text(
-        "Nothing to show",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-      )
-          : ListView.builder(shrinkWrap: true, physics: NeverScrollableScrollPhysics(),itemCount: widget.transactions.length,itemBuilder: (BuildContext context,  int index){
-            return itemViewholder(widget.transactions[index]);
-
-      })
-    );
+        child: widget.transactions == null || widget.transactions.isEmpty
+            ? Text(
+                "Nothing to show",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              )
+            : Expanded(
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: widget.transactions.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return itemViewholder(widget.transactions[index]);
+                    }),
+              ));
   }
 //endregion
 }
-
-
-
