@@ -47,7 +47,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
   //endregion
-
   //region modal bottom sheet
   void _openAddItemModalView() async {
     await showModalBottomSheet(
@@ -104,6 +103,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     RaisedButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0)
+                      ),
                       color: Colors.red,
                       textColor: Colors.white,
                       onPressed: () {
@@ -139,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //endregion
+  //region overrides
   @override
   Widget build(BuildContext context) {
     mContext = context;
@@ -168,4 +171,5 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+  //endregion
 }

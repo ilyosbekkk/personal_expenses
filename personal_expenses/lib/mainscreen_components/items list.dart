@@ -28,7 +28,7 @@ class ItemsListState extends State<ItemsList> {
       alignment: Alignment.topRight,
       child: IconButton(
         onPressed: () {
-          deleteTransaction(transaction);
+         showDeleteDialog(transaction);
         },
         icon: Icon(
           Icons.delete,
@@ -72,6 +72,45 @@ class ItemsListState extends State<ItemsList> {
     );
   }
 
+  //endregion
+
+
+  //region alert dialog
+  Future<void> showDeleteDialog(Transaction  transaction) async{
+    return showDialog(context: context,  barrierDismissible: false,
+        builder: (BuildContext contex){
+             return AlertDialog(
+               title: Text("Delete a transaction"),
+               content: SingleChildScrollView(
+                 child: ListBody(
+                   children: [
+                     Text("Are you sure to delete a transaction?")
+                   ],
+                 ),
+
+               ),
+               actions: [
+                 Row(
+                   children: [
+                     FlatButton(
+                       onPressed: () {
+                         deleteTransaction(transaction);
+                         Navigator.of(context).pop();
+
+                       },
+                       child: Text("Yes"),
+                     ),FlatButton(
+                       onPressed: () {
+                         Navigator.of(context).pop();
+                       },
+                       child: Text("No"),
+                     ),
+                   ],
+                 )
+               ],
+             );
+        });
+  }
   //endregion
   //region Item ViewHolder
   Widget itemViewholder(Transaction tx){

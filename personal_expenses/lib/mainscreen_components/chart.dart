@@ -9,6 +9,7 @@ class Chart extends StatelessWidget {
 
   const Chart(this.recentTransactions);
 
+  //region grouped transaction values
   List<Map<String, Object>> get groupedTransactionValues {
     return List.generate(7, (index) {
       final weekDay = DateTime.now().subtract(
@@ -22,26 +23,32 @@ class Chart extends StatelessWidget {
           totalSum += recentTransactions[i].amount;
         }
       }
-
-      print(DateFormat.E().format(weekDay));
-      print(totalSum);
-
-
-      return {'day': DateFormat.E().format(weekDay).substring(0,1), 'amount': totalSum};
+      return {
+        'day': DateFormat.E().format(weekDay).substring(0, 1),
+        'amount': totalSum
+      };
     });
   }
 
-  //region total spending
-  double get totalSpending{
-    return groupedTransactionValues.fold(1.0,(sum,  item) {
-       return sum + item['amount'];
-    });
-  }
   //endregion
+  //region total spending
+  double get totalSpending {
+    /* return groupedTransactionValues.fold(1.0,(sum,  item) {
+       return sum + item['amount'];
+    });*/
 
+    double sum = 0.00000000000000000000001;
+    for (int i = 0; i < groupedTransactionValues.length; i++) {
+      sum += groupedTransactionValues[i]['amount'];
+    }
+
+    return sum;
+  }
+
+  //endregion
+  //region overrides
   @override
   Widget build(BuildContext context) {
-
     return Container(
       margin: EdgeInsets.all(10),
       height: MediaQuery.of(context).size.height * 0.2,
@@ -53,14 +60,16 @@ class Chart extends StatelessWidget {
           ),
           color: Color.fromRGBO(240, 255, 255, 1),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: groupedTransactionValues.map((e) {
-               return ChartBar(e['day'], e['amount'],  (e['amount'] as double) / totalSpending);
-            }).toList()
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: groupedTransactionValues.map((e) {
+                return Flexible(
 
-
-          )),
+                  fit: FlexFit.tight ,
+                    child: ChartBar(e['day'], e['amount'],
+                        (e['amount'] as double) / totalSpending));
+              }).toList())),
     );
   }
+//endregion
 }

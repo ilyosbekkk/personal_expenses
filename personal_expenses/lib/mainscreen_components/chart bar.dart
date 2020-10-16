@@ -12,7 +12,7 @@ class ChartBar extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("\$${spendingAmount.toStringAsFixed(0)}"),
+        FittedBox(child: Text("\$${spendingAmount.toStringAsFixed(0)}")),
         SizedBox(
           height: 4,
         ),
