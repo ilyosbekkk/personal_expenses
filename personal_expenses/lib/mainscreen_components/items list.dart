@@ -4,20 +4,40 @@ import 'package:personal_expenses/mainscreen_components/chart.dart';
 import 'package:personal_expenses/models/transaction.dart';
 
 class ItemsList extends StatefulWidget {
-  //region list of transactions
-  List<Transaction> transactions;
+  //region vars&constructor
+  List<ExpenseTransaction> transactions;
   final Function  _deleteTransaction;
-
   ItemsList(this.transactions, this._deleteTransaction);
+  //endregion
+
 
   @override
   ItemsListState createState() => ItemsListState();
 }
 
 class ItemsListState extends State<ItemsList> {
-
+  //region overrides
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: widget.transactions == null || widget.transactions.isEmpty
+            ? Text(
+                "Nothing to show",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              )
+            : Expanded(
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: widget.transactions.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return itemViewholder(widget.transactions[index]);
+                    }),
+              ));
+  }
+//endregion
+  //region UI builder methods
   //region Card View Children
-  Widget deleteTransactionWidget(Transaction transaction) {
+  Widget deleteTransactionWidget(ExpenseTransaction transaction) {
     return Container(
       alignment: Alignment.topRight,
       child: IconButton(
@@ -32,7 +52,7 @@ class ItemsListState extends State<ItemsList> {
     );
   }
 
-  Widget priceBoxWidget(Transaction tx) {
+  Widget priceBoxWidget(ExpenseTransaction tx) {
     return Container(
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
@@ -53,7 +73,9 @@ class ItemsListState extends State<ItemsList> {
     );
   }
 
-  Widget ItemInfoWidget(Transaction tx) {
+  Widget ItemInfoWidget(ExpenseTransaction tx) {
+    DateTime time = DateTime.parse(tx.date);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -65,7 +87,8 @@ class ItemsListState extends State<ItemsList> {
         ),
         Container(
           child: Text(
-            DateFormat('yyyy-MM-dd').format(tx.date),
+
+            DateFormat('yyyy-MM-dd').format(time),
             style: TextStyle(color: Colors.grey),
           ),
         )
@@ -73,9 +96,9 @@ class ItemsListState extends State<ItemsList> {
     );
   }
 
-  //endregion
+//endregion
   //region alert dialog
-  Future<void> showDeleteDialog(Transaction transaction) async {
+  Future<void> showDeleteDialog(ExpenseTransaction transaction) async {
     return showDialog(
         context: context,
         barrierDismissible: false,
@@ -92,7 +115,7 @@ class ItemsListState extends State<ItemsList> {
                 children: [
                   FlatButton(
                     onPressed: () {
-                     widget._deleteTransaction(transaction);
+                      widget._deleteTransaction(transaction);
                       Navigator.of(context).pop();
                     },
                     child: Text("Yes"),
@@ -110,9 +133,10 @@ class ItemsListState extends State<ItemsList> {
         });
   }
 
-  //endregion
+//endregion
+
   //region Item ViewHolder
-  Widget itemViewholder(Transaction tx) {
+  Widget itemViewholder(ExpenseTransaction tx) {
     return Card(
 
         shadowColor: Colors.blue,
@@ -129,24 +153,7 @@ class ItemsListState extends State<ItemsList> {
         ));
   }
 
-  //endregion
-  //region overrides
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: widget.transactions == null || widget.transactions.isEmpty
-            ? Text(
-                "Nothing to show",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              )
-            : Expanded(
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: widget.transactions.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return itemViewholder(widget.transactions[index]);
-                    }),
-              ));
-  }
 //endregion
+  //endregion
+
 }

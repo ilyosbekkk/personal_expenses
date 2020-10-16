@@ -1,10 +1,14 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:personal_expenses/database_operations/database.dart';
 import 'package:personal_expenses/mainscreen_components/chart.dart';
 import 'package:personal_expenses/mainscreen_components/items%20list.dart';
 import 'package:personal_expenses/models/transaction.dart';
 import 'package:personal_expenses/utils/utils.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,55 +31,75 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-//region vars
+  //region vars
   final _title = TextEditingController();
   final _price = TextEditingController();
-  DateTime _selectedDate;
-  List<Transaction> transactions = new List();
 
-//endregion
+  ExpenseTransaction _transaction;
+  DateTime _selectedDate;
+  List<ExpenseTransaction> _transactions = new List();
+  BuildContext _mContext;
+  bool _isModalOpen = false;
+
+  //endregion
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  BuildContext mContext;
-  bool isModalOpen = false;
+  //region overrides
+  @override
+  Widget build(BuildContext context) {
+    widget._mContext = context;
 
-  //region presentDatePicker
-  void _presentDatePicker() {
-    showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(
-              (2020),
-            ),
-            lastDate: DateTime.now())
-        .then((value) {
-      if (value != null) {
-        widget._selectedDate = value;
-      }
-    });
-  }
-
-  //endregion
-  //region recentTransactions
-  List<Transaction> get _recentTransactions {
-    return widget.transactions.where((element) {
-      return element.date.isAfter(
-        DateTime.now().subtract(
-          Duration(days: 7),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Personal Expenses"),
+        actions: [
+          !widget._isModalOpen
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      widget._isModalOpen = true;
+                    });
+                    _openAddItemModalView();
+                  },
+                  icon: Icon(Icons.add),
+                )
+              : Container(
+                  margin: EdgeInsets.only(right: 10),
+                  child: Icon(Icons.close),
+                )
+        ],
+      ),
+      body: Container(
+        child: Column(
+          children: [
+            Chart(_recentTransactions),
+            ItemsList(widget._transactions, _deleteTransaction),
+          ],
         ),
-      );
-    }).toList();
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            widget._isModalOpen = true;
+          });
+          _openAddItemModalView();
+        },
+        child: Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
 
-  //endregion
-  //region modal bottom sheet
+//endregion-
+  //region methods
+  //region modalbottomsheet
   void _openAddItemModalView() async {
     await showModalBottomSheet(
-        context: mContext,
+        context: widget._mContext,
         builder: (mContext) {
           return Container(
             child: SingleChildScrollView(
@@ -135,7 +159,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       textColor: Colors.white,
                       onPressed: () {
                         if (widget._title.text.isEmpty ||
-                            widget._price.text.isEmpty || widget._selectedDate == null) {
+                            widget._price.text.isEmpty ||
+                            widget._selectedDate == null) {
                           toast("Product/Amount/Date cannot be empty!");
                         } else if (double.tryParse(widget._price.text) ==
                             null) {
@@ -144,7 +169,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           addItems(widget._title.text,
                               double.parse(widget._price.text));
                           Navigator.pop(context);
-
                         }
                       },
                       child: Text("add item"),
@@ -159,75 +183,71 @@ class _MyHomePageState extends State<MyHomePage> {
       widget._price.text = "";
       widget._selectedDate = null;
       setState(() {
-        isModalOpen = false;
+        widget._isModalOpen = false;
       });
     });
   }
 
   //endregion
-  //region add items
-  void addItems(String title, double price) {
-    setState(() {
-      widget.transactions.add(new Transaction(
-          id: "1", title: title, amount: price, date: widget._selectedDate));
+  //region presentDatePicker
+  void _presentDatePicker() {
+    showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(
+              (2020),
+            ),
+            lastDate: DateTime.now())
+        .then((value) {
+      if (value != null) {
+        widget._selectedDate = value;
+      }
     });
   }
 
   //endregion
-  //region overrides
-  @override
-  Widget build(BuildContext context) {
-    mContext = context;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Personal Expenses"),
-        actions: [
-          !isModalOpen
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isModalOpen = true;
-                    });
-                    _openAddItemModalView();
-                  },
-                  icon: Icon(Icons.add),
-                )
-              : Container(
-                  margin: EdgeInsets.only(right: 10),
-                  child: Icon(Icons.close),
-                )
-        ],
-      ),
-      body: Container(
-        child: Column(
-          children: [
-            Chart(_recentTransactions),
-            ItemsList(widget.transactions,  _deleteTransaction),
-          ],
+  //region recentTransactions
+  List<ExpenseTransaction> get _recentTransactions {
+    return widget._transactions.where((element) {
+      DateTime time = DateTime.parse(element.date);
+      return time.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
         ),
-      ),
+      );
+    }).toList();
+  }
 
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            isModalOpen = true;
-          });
-          _openAddItemModalView();
-        },
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+  //endregion
+  //region save transaction to database
+
+  //endregion
+  //region add transaction
+  void addItems(String title, double price) async {
+    setState(() {
+      BuildDatabase.saveToDatabase(new ExpenseTransaction(id: 1, title: title, amount: price , date: widget._selectedDate.toString()));
+
+      BuildDatabase.expenses().then((value) {
+         for(int i = 0; i<value.length; i++){
+           print(value[i].title + " " + value[i].id.toString() + " " + value[i].amount.toString());
+           print(value[i].date);
+         }
+      });
+
+
+      widget._transactions.add(new ExpenseTransaction(
+          id: 1, title: title, amount: price, date: widget._selectedDate.toString()));
+    });
+  }
+
+  //endregion
+  //region deleteTransaction
+  void _deleteTransaction(Transaction transaction) {
+    setState(() {
+      widget._transactions.remove(transaction);
+    });
   }
 //endregion
-  //region deleteTransaction
-  void _deleteTransaction(Transaction transaction){
-
-    setState(() {
-      widget.transactions.remove(transaction);
-
-    });
-  }
-  //endregion
+//endregion
 
 }

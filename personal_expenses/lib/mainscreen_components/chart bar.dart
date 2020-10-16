@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 class ChartBar extends StatelessWidget {
+
+  //region vars&constructor
   final String label;
   final double spendingAmount;
   final double spendingPcOfTotal;
 
   ChartBar(this.label, this.spendingAmount, this.spendingPcOfTotal);
-
+  //endregion
+  //region overrides
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,4 +50,5 @@ class ChartBar extends StatelessWidget {
       ],
     );
   }
+  //endregion
 }
