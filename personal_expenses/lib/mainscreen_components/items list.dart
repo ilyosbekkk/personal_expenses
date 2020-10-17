@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:personal_expenses/main.dart';
 import 'package:personal_expenses/mainscreen_components/chart.dart';
 import 'package:personal_expenses/models/transaction.dart';
 
@@ -8,8 +9,9 @@ class ItemsList extends StatefulWidget {
   List<ExpenseTransaction> transactions;
   final Function _deleteTransaction;
   final Function _updateTransaction;
+  final Function _openModalBottomSheet;
 
-  ItemsList(this.transactions, this._deleteTransaction,  this._updateTransaction);
+  ItemsList(this.transactions, this._deleteTransaction,  this._updateTransaction, this._openModalBottomSheet);
 
   //endregion
 
@@ -60,7 +62,9 @@ class ItemsListState extends State<ItemsList> {
     return Container(
       alignment: Alignment.topRight,
       child: IconButton(
-        onPressed: () {
+        onPressed:() {
+
+          widget._openModalBottomSheet(true,  transaction);
 
         },
         icon: Icon(

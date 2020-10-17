@@ -64,25 +64,26 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           !widget._isModalOpen
               ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      widget._isModalOpen = true;
-                    });
-                    _openAddItemModalView();
-                  },
-                  icon: Icon(Icons.add),
-                )
+            onPressed: () {
+              setState(() {
+                widget._isModalOpen = true;
+              });
+              _openAddItemModalView(false, null);
+            },
+            icon: Icon(Icons.add),
+          )
               : Container(
-                  margin: EdgeInsets.only(right: 10),
-                  child: Icon(Icons.close),
-                )
+            margin: EdgeInsets.only(right: 10),
+            child: Icon(Icons.close),
+          )
         ],
       ),
       body: Container(
         child: Column(
           children: [
             Chart(_recentTransactions),
-            ItemsList(widget._transactions, _deleteTransaction, _updateTransaction),
+            ItemsList(widget._transactions, _deleteTransaction,
+                _updateTransaction, _openAddItemModalView),
           ],
         ),
       ),
@@ -92,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             widget._isModalOpen = true;
           });
-          _openAddItemModalView();
+          _openAddItemModalView(false, null);
         },
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -102,7 +103,8 @@ class _MyHomePageState extends State<MyHomePage> {
 //endregion-
   //region methods
   //region modalbottomsheet
-  void _openAddItemModalView() async {
+  void _openAddItemModalView(bool isInUpdateMode,
+      ExpenseTransaction transaction) async {
     await showModalBottomSheet(
         context: widget._mContext,
         builder: (mContext) {
@@ -111,77 +113,97 @@ class _MyHomePageState extends State<MyHomePage> {
               scrollDirection: Axis.vertical,
               child: Padding(
                 padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                    bottom: MediaQuery
+                        .of(context)
+                        .viewInsets
+                        .bottom),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.all(10.0),
-                      child: Text(
-                        "ADD ITEM",
-                        style: TextStyle(
-                            color: Colors.purple,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 23),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 10, right: 10),
-                      child: TextField(
-                        controller: widget._title,
-                        decoration: InputDecoration(
-                            labelText: "Item", hintText: "Product name"),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 10, right: 10),
-                      child: TextField(
-                        keyboardType: TextInputType.number,
-                        controller: widget._price,
-                        decoration: InputDecoration(
-                            labelText: "Amount", hintText: "Overall amount"),
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(widget._selectedDate == null
-                              ? "No date chosen"
-                              : DateFormat.yMd().format(widget._selectedDate)),
-                          FlatButton(
-                              textColor: Colors.blue,
-                              child: Text("Pick a date"),
-                              onPressed: _presentDatePicker)
-                        ],
-                      ),
-                    ),
-                    RaisedButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0)),
-                      color: Colors.red,
-                      textColor: Colors.white,
-                      onPressed: () {
-                        if (widget._title.text.isEmpty ||
-                            widget._price.text.isEmpty ||
-                            widget._selectedDate == null) {
-                          toast("Product/Amount/Date cannot be empty!");
-                        } else if (double.tryParse(widget._price.text) ==
-                            null) {
-                          toast("Price accepts numeric value only!");
-                        } else {
-                          addItems(widget._title.text,
-                              double.parse(widget._price.text));
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: Text("add item"),
-                    )
-                  ],
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                Container(
+                margin: EdgeInsets.all(10.0),
+                child: !isInUpdateMode
+                    ? Text(
+                  "ADD NEW TRANSACTION",
+                  style: TextStyle(
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 23),
+                )
+                    : Text(
+                  "UPDATE  ${transaction.title}",
+                  style: TextStyle(
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 23),
                 ),
               ),
+              Container(
+                margin: EdgeInsets.only(left: 10, right: 10),
+                child: TextField(
+                    controller: widget._title,
+                    autofocus: true,
+
+                    decoration: InputDecoration(
+                    labelText: "Item", hintText: "Product name"),
+              ),
             ),
+            Container(
+              margin: EdgeInsets.only(left: 10, right: 10),
+              child: TextField(
+                keyboardType: TextInputType.number,
+                controller: widget._price,
+                autofocus: true,
+                decoration: InputDecoration(
+                    labelText: "Amount", hintText: "Overall amount"),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(left: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(widget._selectedDate == null
+                      ? "No date chosen"
+                      : DateFormat.yMd().format(widget._selectedDate)),
+                  FlatButton(
+                      textColor: Colors.blue,
+                      child: Text("Pick a date"),
+                      onPressed: _presentDatePicker)
+                ],
+              ),
+            ),
+            RaisedButton(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0)),
+              color: Colors.red,
+              textColor: Colors.white,
+              onPressed: () {
+                if (widget._title.text.isEmpty ||
+                    widget._price.text.isEmpty ||
+                    widget._selectedDate == null) {
+                  toast("Product/Amount/Date cannot be empty!");
+                } else if (double.tryParse(widget._price.text) ==
+                    null) {
+                  toast("Price accepts numeric value only!");
+                } else {
+                  !isInUpdateMode
+                      ? saveItemsToDatabase(widget._title.text,
+                      double.parse(widget._price.text))
+                      : _updateTransaction(
+                      transaction,
+                      widget._title.text,
+                      double.parse(widget._price.text));
+                  Navigator.pop(context);
+                }
+              },
+              child: Text("add item"),
+            )
+            ],
+          ),)
+          ,
+          )
+          ,
           );
         }).whenComplete(() {
       widget._title.text = "";
@@ -197,12 +219,12 @@ class _MyHomePageState extends State<MyHomePage> {
   //region presentDatePicker
   void _presentDatePicker() {
     showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime(
-              (2020),
-            ),
-            lastDate: DateTime.now())
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(
+          (2020),
+        ),
+        lastDate: DateTime.now())
         .then((value) {
       if (value != null) {
         widget._selectedDate = value;
@@ -228,7 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //endregion
   //region add transaction
-  void addItems(String title, double price) async {
+  void saveItemsToDatabase(String title, double price) async {
     setState(() {
       BuildDatabase.saveToDatabase(new ExpenseTransaction(
           id: null,
@@ -254,10 +276,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
 //endregionk
   //region update transaction
-   void _updateTransaction(ExpenseTransaction transaction){
-    _openAddItemModalView();
-    BuildDatabase.updateTransaction(transaction);
-   }
+  void _updateTransaction(ExpenseTransaction transaction, String title,
+      double amount) {
+    setState(() {
+      BuildDatabase.updateTransaction(new ExpenseTransaction(
+          id: transaction.id,
+          title: title,
+          amount: amount,
+          date: widget._selectedDate.toString()));
+
+      transaction.title = title;
+      transaction.amount = amount;
+      transaction.date = widget._selectedDate.toString();
+    });
+  }
+
   //endregion
   //region fetch data from database
   void fetchData() {
@@ -275,6 +308,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 //endregion
 
- //endregion
+//endregion
 
 }
