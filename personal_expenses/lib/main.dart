@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:personal_expenses/database_operations/database.dart';
 import 'package:personal_expenses/mainscreen_components/chart.dart';
@@ -16,12 +17,25 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
+
       theme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: Colors.lightBlue,
+        accentColor: Colors.cyan,
+        fontFamily: 'Georgia',
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+
+        textTheme: TextTheme(
+          headline1:  TextStyle(fontSize: 72.0,  fontWeight: FontWeight.bold),
+          headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
+          bodyText2: TextStyle(fontSize: 14.0,  fontFamily: 'Hind')
+        )
       ),
       home: MyHomePage(),
     );

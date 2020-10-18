@@ -11,7 +11,8 @@ class ItemsList extends StatefulWidget {
   final Function _updateTransaction;
   final Function _openModalBottomSheet;
 
-  ItemsList(this.transactions, this._deleteTransaction,  this._updateTransaction, this._openModalBottomSheet);
+  ItemsList(this.transactions, this._deleteTransaction, this._updateTransaction,
+      this._openModalBottomSheet);
 
   //endregion
 
@@ -34,7 +35,26 @@ class ItemsListState extends State<ItemsList> {
                     shrinkWrap: true,
                     itemCount: widget.transactions.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return itemViewholder(widget.transactions[index]);
+                      final item = widget.transactions[index].title;
+                      return Dismissible(
+                        background: Center(
+                            child: Text("Transaction will be deleted!!!",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold))),
+                        direction: DismissDirection.startToEnd,
+                        key: Key(item),
+                        onDismissed: (direction) {
+                          if (direction == DismissDirection.startToEnd) {
+                            widget
+                                ._deleteTransaction(widget.transactions[index]);
+                            Scaffold.of(context).showSnackBar(
+                                SnackBar(content: Text("$item deleted!!!")));
+                          }
+                        },
+                        child: itemViewholder(widget.transactions[index]),
+                      );
                     }),
               ));
   }
@@ -57,15 +77,12 @@ class ItemsListState extends State<ItemsList> {
     );
   }
 
-
   Widget editTransactionWidget(ExpenseTransaction transaction) {
     return Container(
       alignment: Alignment.topRight,
       child: IconButton(
-        onPressed:() {
-
-          widget._openModalBottomSheet(true,  transaction);
-
+        onPressed: () {
+          widget._openModalBottomSheet(true, transaction);
         },
         icon: Icon(
           Icons.edit,
@@ -74,7 +91,6 @@ class ItemsListState extends State<ItemsList> {
       ),
     );
   }
-
 
   Widget priceBoxWidget(ExpenseTransaction tx) {
     return Container(
@@ -178,7 +194,6 @@ class ItemsListState extends State<ItemsList> {
                 ],
               ),
             ),
-
           ],
         ));
   }
