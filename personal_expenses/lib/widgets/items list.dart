@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:personal_expenses/main.dart';
-import 'package:personal_expenses/mainscreen_components/chart.dart';
+
 import 'package:personal_expenses/models/transaction.dart';
 
 class ItemsList extends StatefulWidget {
@@ -25,38 +24,35 @@ class ItemsListState extends State<ItemsList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: widget.transactions == null || widget.transactions.isEmpty
-            ? Text(
-                "Waiting...",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              )
-            : Expanded(
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: widget.transactions.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final item = widget.transactions[index].title;
-                      return Dismissible(
-                        background: Center(
-                            child: Text("Transaction will be deleted!!!",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold))),
-                        direction: DismissDirection.startToEnd,
-                        key: Key(item),
-                        onDismissed: (direction) {
-                          if (direction == DismissDirection.startToEnd) {
-                            widget
-                                ._deleteTransaction(widget.transactions[index]);
-                            Scaffold.of(context).showSnackBar(
-                                SnackBar(content: Text("$item deleted!!!")));
-                          }
-                        },
-                        child: itemViewholder(widget.transactions[index]),
-                      );
-                    }),
-              ));
+      child: widget.transactions == null || widget.transactions.isEmpty
+          ? Text(
+              "No Transactions:)",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            )
+          : ListView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: widget.transactions.length,
+              itemBuilder: (BuildContext context, int index) {
+                final item = widget.transactions[index].title;
+                return Dismissible(
+                  background: Center(
+                      child: Text("Transaction will be deleted!!!",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.bold))),
+                  direction: DismissDirection.startToEnd,
+                  key: Key(item),
+                  onDismissed: (direction) {
+                    if (direction == DismissDirection.startToEnd) {
+                      widget._deleteTransaction(widget.transactions[index]);
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("$item deleted!!!")));
+                    }
+                  },
+                  child: itemViewholder(widget.transactions[index]),
+                );
+              }),
+    );
   }
 
 //endregion

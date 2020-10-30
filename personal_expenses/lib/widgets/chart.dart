@@ -1,8 +1,9 @@
+import 'package:personal_expenses/models/transaction.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:personal_expenses/mainscreen_components/chart%20bar.dart';
-import 'package:personal_expenses/models/transaction.dart';
 import 'package:intl/intl.dart';
+
+import 'chart bar.dart';
 
 class Chart extends StatelessWidget {
 
@@ -15,7 +16,6 @@ class Chart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.all(10),
-      height: MediaQuery.of(context).size.height * 0.2,
       child: Card(
           elevation: 10,
           shape: RoundedRectangleBorder(
