@@ -1,13 +1,12 @@
 import 'package:personal_expenses/database_operations/database.dart';
+import 'package:personal_expenses/widgets/new_transaction.dart';
 import 'package:personal_expenses/widgets/items%20list.dart';
 import 'package:personal_expenses/models/transaction.dart';
 import 'package:personal_expenses/widgets/chart.dart';
-import 'package:personal_expenses/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
-import 'package:personal_expenses/widgets/new_transaction.dart';
+
+import 'dart:io' show Platform;
 
 class AppController extends StatefulWidget {
   //region vars
@@ -17,6 +16,7 @@ class AppController extends StatefulWidget {
   DateTime _selectedDate;
   List<ExpenseTransaction> _transactions = new List();
   bool _isModalOpen = false;
+  bool isIos = Platform.isIOS;
 
   //endregion
 
@@ -33,35 +33,40 @@ class _AppControllerState extends State<AppController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _app_bar(),
-      body: app_body(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            widget._isModalOpen = true;
-          });
-          _openAddItemModalView(context, false, null);
-        },
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    return widget.isIos
+        ? CupertinoPageScaffold(
+            child: appBody(context),
+            navigationBar: _navigation_bar(),
+          )
+        : Scaffold(
+            appBar: _app_bar(),
+            body: appBody(context),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  widget._isModalOpen = true;
+                });
+                _openAddItemModalView(context, false, null);
+              },
+              child: Icon(Icons.add),
+            ), // This trailing comma makes auto-formatting nicer for build methods.
+          );
   }
 
   //region app_body
-  SafeArea app_body(BuildContext context) {
+  SafeArea appBody(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = (mediaQuery.orientation == Orientation.landscape);
-    final app_bar = _app_bar();
+    final appBar = _app_bar();
     final listItems = Container(
       height: (mediaQuery.size.height -
-              app_bar.preferredSize.height -
+              appBar.preferredSize.height -
               mediaQuery.padding.top) *
           0.7,
       child: ItemsList(widget._transactions, _deleteTransaction,
           _updateTransaction, _openAddItemModalView),
     );
-    final switch_widget = Row(
+    final switchWidget = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(widget.isChartOrListVisible ? "show list" : "show chart"),
@@ -78,11 +83,11 @@ class _AppControllerState extends State<AppController> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            if (isLandscape) switch_widget,
+            if (isLandscape) switchWidget,
             if (!isLandscape)
               Container(
                   height: (mediaQuery.size.height -
-                          app_bar.preferredSize.height -
+                          appBar.preferredSize.height -
                           mediaQuery.padding.top) *
                       0.3,
                   child: Chart(_recentTransactions)),
@@ -91,7 +96,7 @@ class _AppControllerState extends State<AppController> {
               widget.isChartOrListVisible
                   ? Container(
                       height: (mediaQuery.size.height -
-                              app_bar.preferredSize.height -
+                              appBar.preferredSize.height -
                               mediaQuery.padding.top) *
                           0.7,
                       child: Chart(_recentTransactions))
@@ -124,6 +129,19 @@ class _AppControllerState extends State<AppController> {
               )
       ],
     );
+  }
+
+  CupertinoNavigationBar _navigation_bar() {
+    return CupertinoNavigationBar(
+        leading: Text("Personal Expenses"),
+        trailing: !widget._isModalOpen
+            ? GestureDetector(
+                child: Icon(CupertinoIcons.add),
+              )
+            : Container(
+                margin: EdgeInsets.only(right: 10),
+                child: Icon(CupertinoIcons.clear),
+              ));
   }
 
   //endregion

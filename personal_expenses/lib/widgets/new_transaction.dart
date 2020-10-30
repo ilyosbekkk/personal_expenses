@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:personal_expenses/models/transaction.dart';
 import 'package:personal_expenses/utils/utils.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
   final _isInUpdateMode;
