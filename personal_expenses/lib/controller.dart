@@ -5,10 +5,14 @@ import 'package:personal_expenses/models/transaction.dart';
 import 'package:personal_expenses/widgets/chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'dart:io' show Platform;
 
 class AppController extends StatefulWidget {
+  @override
+  _AppControllerState createState() => _AppControllerState();
+}
+
+class _AppControllerState extends State<AppController> {
   //region vars
   final _title = TextEditingController();
   final _price = TextEditingController();
@@ -17,14 +21,8 @@ class AppController extends StatefulWidget {
   List<ExpenseTransaction> _transactions = new List();
   bool _isModalOpen = false;
   bool isIos = Platform.isIOS;
-
   //endregion
-
-  @override
-  _AppControllerState createState() => _AppControllerState();
-}
-
-class _AppControllerState extends State<AppController> {
+  //region overrides
   @override
   void initState() {
     super.initState();
@@ -33,48 +31,41 @@ class _AppControllerState extends State<AppController> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.isIos
+    return isIos
         ? CupertinoPageScaffold(
             child: appBody(context),
-            navigationBar: _navigation_bar(),
+            navigationBar: _navogationBar(),
           )
         : Scaffold(
-            appBar: _app_bar(),
+            appBar: _appBar(),
             body: appBody(context),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  widget._isModalOpen = true;
-                });
-                _openAddItemModalView(context, false, null);
-              },
-              child: Icon(Icons.add),
-            ), // This trailing comma makes auto-formatting nicer for build methods.
+            floatingActionButton: floatingActionButton(), // This trailing comma makes auto-formatting nicer for build methods.
           );
   }
+  //endregion
 
   //region app_body
   SafeArea appBody(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = (mediaQuery.orientation == Orientation.landscape);
-    final appBar = _app_bar();
+    final appBar = _appBar();
     final listItems = Container(
       height: (mediaQuery.size.height -
               appBar.preferredSize.height -
               mediaQuery.padding.top) *
           0.7,
-      child: ItemsList(widget._transactions, _deleteTransaction,
-          _updateTransaction, _openAddItemModalView),
+      child: ItemsList(_transactions, _deleteTransaction, _updateTransaction,
+          _openAddItemModalView),
     );
     final switchWidget = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(widget.isChartOrListVisible ? "show list" : "show chart"),
+        Text(isChartOrListVisible ? "show list" : "show chart"),
         Switch.adaptive(
-            value: widget.isChartOrListVisible,
+            value: isChartOrListVisible,
             onChanged: (val) {
               setState(() {
-                widget.isChartOrListVisible = val;
+                isChartOrListVisible = val;
               });
             })
       ],
@@ -83,24 +74,9 @@ class _AppControllerState extends State<AppController> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            if (isLandscape) switchWidget,
-            if (!isLandscape)
-              Container(
-                  height: (mediaQuery.size.height -
-                          appBar.preferredSize.height -
-                          mediaQuery.padding.top) *
-                      0.3,
-                  child: Chart(_recentTransactions)),
-            if (!isLandscape) listItems,
             if (isLandscape)
-              widget.isChartOrListVisible
-                  ? Container(
-                      height: (mediaQuery.size.height -
-                              appBar.preferredSize.height -
-                              mediaQuery.padding.top) *
-                          0.7,
-                      child: Chart(_recentTransactions))
-                  : listItems,
+              ..._landscapeMode(switchWidget, listItems, mediaQuery, appBar),
+            if (!isLandscape) ..._portraitMode(mediaQuery, appBar, listItems),
           ],
         ),
       ),
@@ -109,15 +85,15 @@ class _AppControllerState extends State<AppController> {
 
   //endregion
   //region app_bar
-  AppBar _app_bar() {
+  AppBar _appBar() {
     return AppBar(
       title: Text("Personal Expenses"),
       actions: [
-        !widget._isModalOpen
+        !_isModalOpen
             ? IconButton(
                 onPressed: () {
                   setState(() {
-                    widget._isModalOpen = true;
+                    _isModalOpen = true;
                   });
                   _openAddItemModalView(context, false, null);
                 },
@@ -131,10 +107,10 @@ class _AppControllerState extends State<AppController> {
     );
   }
 
-  CupertinoNavigationBar _navigation_bar() {
+  CupertinoNavigationBar _navogationBar() {
     return CupertinoNavigationBar(
         leading: Text("Personal Expenses"),
-        trailing: !widget._isModalOpen
+        trailing: !_isModalOpen
             ? GestureDetector(
                 child: Icon(CupertinoIcons.add),
               )
@@ -157,17 +133,17 @@ class _AppControllerState extends State<AppController> {
                 transaction,
                 saveItemsToDatabase,
                 _updateTransaction,
-                widget._title,
-                widget._price,
-                widget._selectedDate,
+                _title,
+                _price,
+                _selectedDate,
                 _presentDatePicker),
           );
         }).whenComplete(() {
-      widget._title.text = "";
-      widget._price.text = "";
-      widget._selectedDate = null;
+      _title.text = "";
+      _price.text = "";
+      _selectedDate = null;
       setState(() {
-        widget._isModalOpen = false;
+        _isModalOpen = false;
       });
     });
   }
@@ -185,14 +161,14 @@ class _AppControllerState extends State<AppController> {
         .then((value) {
       if (value != null) {
         setState(() {
-          widget._selectedDate = value;
+          _selectedDate = value;
         });
       }
     });
   }
 
   List<ExpenseTransaction> get _recentTransactions {
-    return widget._transactions.where((element) {
+    return _transactions.where((element) {
       DateTime time = DateTime.parse(element.date);
       return time.isAfter(
         DateTime.now().subtract(
@@ -210,19 +186,16 @@ class _AppControllerState extends State<AppController> {
           id: null,
           title: title,
           amount: price,
-          date: widget._selectedDate.toString()));
-      widget._transactions.add(new ExpenseTransaction(
-          id: 1,
-          title: title,
-          amount: price,
-          date: widget._selectedDate.toString()));
+          date: _selectedDate.toString()));
+      _transactions.add(new ExpenseTransaction(
+          id: 1, title: title, amount: price, date: _selectedDate.toString()));
     });
   }
 
   void _deleteTransaction(ExpenseTransaction transaction) {
     setState(() {
       BuildDatabase.deleteFromDatabase(transaction.id);
-      widget._transactions.remove(transaction);
+      _transactions.remove(transaction);
     });
   }
 
@@ -233,26 +206,72 @@ class _AppControllerState extends State<AppController> {
           id: transaction.id,
           title: title,
           amount: amount,
-          date: widget._selectedDate.toString()));
+          date: _selectedDate.toString()));
 
       transaction.title = title;
       transaction.amount = amount;
-      transaction.date = widget._selectedDate.toString();
+      transaction.date = _selectedDate.toString();
     });
   }
 
   void fetchData() {
     BuildDatabase.expenses().then((value) {
       setState(() {
-        if (widget._transactions.isNotEmpty) {
-          widget._transactions.clear();
+        if (_transactions.isNotEmpty) {
+          _transactions.clear();
         }
-        widget._transactions.addAll(value);
+        _transactions.addAll(value);
         for (int i = 0; i < value.length; i++) {
           print(value[i].title);
         }
       });
     });
+  }
+
+//endregion
+  //region landscape_mode
+  List<Widget> _landscapeMode(Row switchWidget, Container listItems,
+      MediaQueryData mediaQuery, AppBar appBar) {
+    return [
+      switchWidget,
+      isChartOrListVisible
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: Chart(_recentTransactions))
+          : listItems
+    ];
+  }
+
+  //endregion
+  //region  portrait_mode
+  List<Widget> _portraitMode(
+      MediaQueryData mediaQuery, AppBar appBar, Container listItem) {
+    return [
+      Container(
+          height: (mediaQuery.size.height -
+                  appBar.preferredSize.height -
+                  mediaQuery.padding.top) *
+              0.3,
+          child: Chart(_recentTransactions)),
+      listItem
+    ];
+  }
+
+//endregion
+  //region floatingActionButton
+  Widget floatingActionButton() {
+    return FloatingActionButton(
+      onPressed: () {
+        setState(() {
+          _isModalOpen = true;
+        });
+        _openAddItemModalView(context, false, null);
+      },
+      child: Icon(Icons.add),
+    );
   }
 //endregion
 

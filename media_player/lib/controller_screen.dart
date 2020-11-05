@@ -6,6 +6,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class Controller extends StatefulWidget {
   List<SongInfo> songs = new List();
+  bool isFavorite = false;
 
   @override
   _ControllerState createState() => _ControllerState();
@@ -28,28 +29,83 @@ class _ControllerState extends State<Controller> {
         appBar: AppBar(
           title: Text("Music App"),
         ),
-        body: ListView.separated(
-            itemCount: widget.songs.length,
-            separatorBuilder: (BuildContext context, int index) => Divider(),
-            itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                onTap: () {
-                  print(widget.songs[index].filePath.toString());
-                  openCupertinoModalBottomSheet(
-                      widget.songs[index].title.toString(), true,  widget.songs[index]);
-                },
-                child: Text(
-                  widget.songs[index].title.toString(),
-                  style: Theme.of(context).textTheme.headline1,
-                ),
-              );
-            }));
+        body: widget.songs.length > 0
+            ? ListView.builder(
+                itemCount: widget.songs.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return GestureDetector(
+                    onTap: () {
+                      playMusic(widget.songs[index].title.toString(), true,
+                          widget.songs[index], widget.songs);
+                    },
+                    child: indvidualSong(widget.songs[index]),
+                  );
+                })
+            : Center(
+                child: Text("No music available"),
+              ));
   }
 
-  void openCupertinoModalBottomSheet(String title,  bool isPlaying, SongInfo info ) async {
+  void playMusic(
+      String title, bool isPlaying, SongInfo songInfo, List<SongInfo> songs) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                MusicPlayer(title, isPlaying, songInfo, songs)));
+  }
 
-    return await showCupertinoModalBottomSheet(
-        context: context,
-        builder: (context, scrollController) => MusicPlayer(title, isPlaying,  info));
+  Widget indvidualSong(SongInfo songInfo) {
+    String formattedTitle;
+    String icon = songInfo.title.toString()[0];
+    String songTitle = songInfo.title.toString();
+    if (songTitle.length >= 20) {
+      formattedTitle = songTitle.substring(0, 15);
+    } else {
+      formattedTitle = songTitle;
+    }
+    return Card(
+      elevation: 5.0,
+      child: Row(
+        children: [
+          Container(
+            margin: EdgeInsets.all(5.0),
+            child: CircleAvatar(
+              backgroundColor: Colors.lightBlueAccent,
+              child: Text(icon),
+            ),
+          ),
+          Text(
+            "${formattedTitle}...",
+            style: Theme.of(context).textTheme.headline1,
+          ),
+          !widget.isFavorite
+              ? Expanded(
+
+                child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.isFavorite = true;
+                      });
+                    },
+                    icon: Icon(Icons.favorite_border),
+                  ),
+              )
+              : Expanded(
+                child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.isFavorite = false;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.favorite,
+                      color: Colors.red,
+                    ),
+                  ),
+              )
+        ],
+      ),
+    );
   }
 }

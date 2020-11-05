@@ -67,7 +67,6 @@ class Chart extends StatelessWidget {
     for (int i = 0; i < groupedTransactionValues.length; i++) {
       sum += groupedTransactionValues[i]['amount'];
     }
-
     return sum;
   }
   //endregion
